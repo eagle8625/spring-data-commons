@@ -15,13 +15,15 @@
  */
 package org.springframework.data.querydsl;
 
-import java.util.Date;
-import java.util.List;
-
+import com.querydsl.core.annotations.QueryEntity;
+import org.springframework.data.annotation.Transient;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
-import com.querydsl.core.annotations.QueryEntity;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Oliver Gierke
@@ -31,32 +33,78 @@ import com.querydsl.core.annotations.QueryEntity;
 @QueryEntity
 public class User {
 
-	public String firstname, lastname;
-	public @DateTimeFormat(iso = ISO.DATE) Date dateOfBirth;
-	public Address address;
-	public List<Address> addresses;
-	public List<String> nickNames;
-	public Long inceptionYear;
+    public String firstname, lastname;
+    public
+    @DateTimeFormat(iso = ISO.DATE)
+    Date dateOfBirth;
+    public Address address;
+    public List<Address> addresses;
+    public List<String> nickNames;
+    public Long inceptionYear;
 
-	public User(String firstname, String lastname, Address address) {
+    public List<Map<String, Object>> mapAttrs;
+    @Transient
+    public Other other;
 
-		this.firstname = firstname;
-		this.lastname = lastname;
-		this.address = address;
-	}
+    public Map<String, Object> mapProperties;
+
+
+    public User(String firstname, String lastname, Address address) {
+
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.address = address;
+        initMap ( );
+    }
+
+    public User(Other other) {
+        this.other = other;
+        initMap ( );
+    }
+
+    public void initMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put ("strkey", "stringValue");
+        map.put ("intkey", 1);
+        map.put ("datekey", new Date ( ));
+        mapAttrs.add (map);
+    }
 }
 
 @QueryEntity
 class SpecialUser extends User {
 
-	public String specialProperty;
+    public String specialProperty;
 
-	public SpecialUser(String firstname, String lastname, Address address) {
-		super(firstname, lastname, address);
-	}
+    public String strkey;
+    public Integer intkey;
+    public Date datekey;
+
+    public SpecialUser(String firstname, String lastname, Address address) {
+        super (firstname, lastname, address);
+    }
 }
+
 
 @QueryEntity
 class UserWrapper {
-	public User user;
+    public User user;
+    public SpecialUser mapAttrs;
 }
+
+//@QueryEntity
+//class MapUser extends User {
+//
+//    public MapUser(String firstname, String lastname, Address address) {
+//        super (firstname, lastname, address);
+//    }
+//
+//    public String strkey;
+//    public Integer intkey;
+//    public Date datekey;
+//}
+//
+//@QueryEntity
+//class UserMapWrapper {
+//    public User mapAttrs;
+//}

@@ -16,6 +16,7 @@
 package org.springframework.data.querydsl;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ import java.util.List;
  */
 public class Users {
 
-	public static final User OLIVER, CHRISTOPH;
+	public static final User OLIVER, CHRISTOPH, OTHER;
 
 	public static final List<User> USERS;
 
@@ -31,7 +32,8 @@ public class Users {
 
 		OLIVER = new User("Oliver", "Gierke", new Address("Somewhere", "Dresden"));
 		CHRISTOPH = new User("Christoph", "Strobl", new Address("Somewhere", "Linz"));
+		OTHER = new User(new Other ("thisisprop1", 2, new Date ()));
 
-		USERS = Arrays.asList(OLIVER, CHRISTOPH);
+		USERS = Arrays.asList(OLIVER, CHRISTOPH, OTHER);
 	}
 }

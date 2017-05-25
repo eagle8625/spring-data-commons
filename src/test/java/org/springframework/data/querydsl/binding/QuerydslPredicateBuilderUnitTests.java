@@ -15,37 +15,31 @@
  */
 package org.springframework.data.querydsl.binding;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.springframework.test.util.ReflectionTestUtils.*;
-
-import java.text.ParseException;
-import java.util.List;
-
+import com.querydsl.collections.CollQueryFactory;
+import com.querydsl.core.types.Constant;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.StringPath;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.querydsl.QSpecialUser;
-import org.springframework.data.querydsl.QUser;
-import org.springframework.data.querydsl.QUserWrapper;
-import org.springframework.data.querydsl.SimpleEntityPathResolver;
-import org.springframework.data.querydsl.User;
-import org.springframework.data.querydsl.Users;
+import org.springframework.data.querydsl.*;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.querydsl.collections.CollQueryFactory;
-import com.querydsl.core.types.Constant;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.StringPath;
+import java.text.ParseException;
+import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 /**
  * Unit tests for {@link QuerydslPredicateBuilder}.
- * 
+ *
  * @author Christoph Strobl
  * @author Oliver Gierke
  */
@@ -167,6 +161,23 @@ public class QuerydslPredicateBuilderUnitTests {
 	}
 
 	@Test // DATACMNS-734
+	@SuppressWarnings("unchecked")
+	public void leavesCommaSeparatedArgumentUntouchedWhenTargetIsNotAnArray1() {
+
+		values.add("other.prop1", "thisisprop1");
+
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, DEFAULT_BINDINGS);
+
+
+		assertThat(predicate, is((Predicate) QUser.user.other.prop1.eq("thisisprop1")));
+
+		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
+
+		assertThat(result, hasSize(1));
+		assertThat(result, hasItem(Users.OTHER));
+	}
+
+	@Test // DATACMNS-734
 	public void bindsDateCorrectly() throws ParseException {
 
 		DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd");
@@ -188,6 +199,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		assertThat(predicate, is((Predicate) QUser.user.addresses.any().street.eq("VALUE")));
 	}
+
 
 	@Test // DATACMNS-941
 	public void buildsPredicateForBindingUsingDowncast() {
@@ -218,4 +230,21 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		assertThat(predicate, is((Predicate) $.user.as(QSpecialUser.class).specialProperty.contains("VALUE")));
 	}
+
+	@Test // DATACMNS-941
+	public void buildsPredicateForBindingUsingNestedDowncastForMapfields() {
+
+		values.add("mapAttrs.strkey", "stringValue");
+
+		QUserWrapper $ = QUserWrapper.userWrapper;
+
+		QuerydslBindings bindings = new QuerydslBindings();
+		bindings.bind($.mapAttrs.as(QSpecialUser.class).strkey)//
+				.first(QuerydslBindingsUnitTests.ContainsBinding.INSTANCE);
+
+		Predicate predicate = builder.getPredicate(USER_TYPE, values, bindings);
+
+		assertThat(predicate, is((Predicate) $.mapAttrs.as(QSpecialUser.class).strkey.contains("stringValue")));
+	}
+
 }
