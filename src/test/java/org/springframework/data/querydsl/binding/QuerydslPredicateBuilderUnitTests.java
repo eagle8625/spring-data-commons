@@ -43,7 +43,7 @@ import com.querydsl.core.types.dsl.StringPath;
 
 /**
  * Unit tests for {@link QuerydslPredicateBuilder}.
- * 
+ *
  * @author Christoph Strobl
  * @author Oliver Gierke
  */
@@ -119,6 +119,7 @@ public class QuerydslPredicateBuilderUnitTests {
 
 		List<User> result = CollQueryFactory.from(QUser.user, Users.USERS).where(predicate).fetchResults().getResults();
 
+		System.out.println ("dddd" );
 		assertThat(result, hasSize(1));
 		assertThat(result, hasItem(Users.CHRISTOPH));
 	}
